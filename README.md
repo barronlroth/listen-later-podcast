@@ -7,13 +7,14 @@ Distribute your own small-scale podcast with minimal setup so you can:
 
 Highlights:
 - Built on top of Github Pages and Github Actions so hosting is free and takes only 4-minutes to setup
-- Supports unlisted/undiscoverable RSS feeds, so you can publish sensitive information for consumption by a restricted audience
+- (With a paid Github account) Supports unlisted/undiscoverable RSS feeds, so you can publish sensitive information for consumption by a restricted audience
 - Comes with a lightweight CLI that makes it easy for both humans and agents to publish and manage episodes and feeds
 
 ## Limitations
 - [Published GitHub Pages sites may not be larger than 1 GB.](https://docs.github.com/en/pages/getting-started-with-github-pages/github-pages-limits)
 - [GitHub Pages has a soft bandwidth limit of 100 GB per month.](https://docs.github.com/en/pages/getting-started-with-github-pages/github-pages-limits)
 - [GitHub blocks individual files larger than 100 MiB.](https://docs.github.com/en/repositories/working-with-files/managing-large-files/about-large-files-on-github)
+- [Github requires a paid account to enable Github Pages on a private repository.](https://docs.github.com/en/pages/getting-started-with-github-pages/creating-a-github-pages-site?source=post_page---------------------------)
 - There is no authentication-based access control. Random feed IDs and episode folders make URLs impossible to guess, but anyone with a URL can fetch the file.
 
 The CLI rejects audio files larger than 100 MiB before adding them to `public/episodes/`.
