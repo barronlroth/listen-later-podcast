@@ -1,1 +1,8 @@
-{}
+listen-later:
+  feed_id: a4d844af-a38e-4ecb-864d-6c848f600c09
+  title: "Barron\u2019s Listen Later"
+  description: Articles, interviews, briefs, and deep dives converted into a private
+    listening queue.
+  episodes:
+  - public/episodes/7dbc803a-733e-4341-b2b2-9624e85912c1
+  cover: public/covers/a4d844af-a38e-4ecb-864d-6c848f600c09.jpg
