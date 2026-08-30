@@ -49,7 +49,7 @@ python3 -m pip install -r requirements.txt
 4. Locally create your first feed and add your first podcast episode to it
 
 ```bash
-python3 manage_podcast.py create_feed my-podcast --title "My Podcast" --description "A show about interesting things."
+python3 manage_podcast.py create_feed my-podcast --title "My Podcast" --description "A show about interesting things." --cover ~/Desktop/cover.jpg
 python3 manage_podcast.py add_episode ~/Desktop/interview.mp3 --feed my-podcast --title "First Episode" --description "A short intro episode."
 ```
 
@@ -68,7 +68,7 @@ GitHub Actions will rebuild the feed XML and publish it to GitHub Pages. Use the
 **Create a feed:**
 
 ```bash
-python3 manage_podcast.py create_feed my-podcast --title "My Podcast" --description "A show about interesting things."
+python3 manage_podcast.py create_feed my-podcast --title "My Podcast" --description "A show about interesting things." --cover ~/Desktop/cover.jpg
 ```
 
 **Add an episode to a feed:**
@@ -97,12 +97,14 @@ python3 manage_podcast.py cross_post --to-feed private-notes --episode-id 9c8b7a
 │   │   │   └── episode.yml
 │   │   └── 9c8b7a6f-5e4d-3c2b-8a1f-0e9d7c6b5a4f/
 │   │       └── audio.mp3
+│   └── covers/
+│       └── 1b3f3b4a-3a40-4f7f-8df5-582c40f3f2fd.jpg
 ├── feed.yml
 ├── manage_podcast.py
 └── requirements.txt
 ```
 
-`feed.yml` is the source database. The CLI stores imported audio and optional episode metadata under random UUID folders in `public/episodes/`.
+`feed.yml` is the source database. The CLI stores imported audio and optional episode metadata under random UUID folders in `public/episodes/`. Feed cover art is copied to `public/covers/<feed-id>.<ext>` when `create_feed` is run with `--cover`.
 
 Feed files such as `public/feeds/1b3f3b4a-3a40-4f7f-8df5-582c40f3f2fd.xml` are generated inside GitHub Actions and uploaded to GitHub Pages. They are not committed back to the repository. The feed leverages the `feed_id` stored in `feed.yml` so that the url of the feed remains unchanged on subsequent publishes and regenerations and does not break connection of client podcast players that are subscribed to the feed.
 
@@ -118,6 +120,12 @@ Episode Audio URLs:
 
 ```text
 https://YOUR_USERNAME.github.io/YOUR_REPO/episodes/<episode-id>/audio.mp3
+```
+
+Cover Art URLs:
+
+```text
+https://YOUR_USERNAME.github.io/YOUR_REPO/covers/<feed-id>.jpg
 ```
 
 ### Privacy Notes

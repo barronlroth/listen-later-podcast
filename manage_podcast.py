@@ -21,9 +21,10 @@ PLACEHOLDER_PAGES_URL = "https://YOUR_USERNAME.github.io/YOUR_REPO"
 FEEDS_FOLDER = Path("feeds")
 PUBLIC_FOLDER = Path("public")
 EPISODES_FOLDER = PUBLIC_FOLDER / "episodes"
+COVERS_FOLDER = PUBLIC_FOLDER / "covers"
 MASTER_CONFIG = Path("feed.yml")
-DEFAULT_COVER = "cover.jpg"
 AUDIO_EXTENSIONS = {".mp3", ".m4a", ".wav", ".aac", ".ogg", ".opus"}
+COVER_EXTENSIONS = {".jpg", ".jpeg", ".png"}
 MAX_GITHUB_FILE_SIZE_BYTES = 100 * 1024 * 1024
 
 ITUNES_NS = "http://www.itunes.com/dtds/podcast-1.0.dtd"
@@ -80,6 +81,17 @@ def audio_mime_type(audio_path):
     return guessed or "audio/mpeg"
 
 
+def validate_publishable_file(file_path):
+    file_size = file_path.stat().st_size
+    if file_size > MAX_GITHUB_FILE_SIZE_BYTES:
+        print(
+            f"Error: '{file_path}' is {format_mib(file_size)}. GitHub blocks files "
+            "larger than 100 MiB. Compress the file or use external object storage.",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+
 def format_mib(size_bytes):
     return f"{size_bytes / (1024 * 1024):.1f} MiB"
 
@@ -122,8 +134,10 @@ def create_base_feed(show_id, show_meta):
     ET.SubElement(channel, "link").text = BASE_URL
     ET.SubElement(channel, "language").text = show_meta.get("language", "en-us")
 
-    image = ET.SubElement(channel, f"{{{ITUNES_NS}}}image")
-    image.set("href", f"{BASE_URL}/{DEFAULT_COVER}")
+    cover_path = show_meta.get("cover")
+    if cover_path:
+        image = ET.SubElement(channel, f"{{{ITUNES_NS}}}image")
+        image.set("href", f"{BASE_URL}/{public_url_path(Path(cover_path))}")
 
     return rss, channel
 
@@ -156,9 +170,6 @@ def build_all_feeds():
     config = load_master_config()
     (PUBLIC_FOLDER / FEEDS_FOLDER).mkdir(parents=True, exist_ok=True)
     EPISODES_FOLDER.mkdir(parents=True, exist_ok=True)
-
-    if Path(DEFAULT_COVER).exists():
-        shutil.copy2(DEFAULT_COVER, PUBLIC_FOLDER / DEFAULT_COVER)
 
     for show_key, show_meta in config.items():
         rss, channel = create_base_feed(show_key, show_meta or {})
@@ -227,12 +238,35 @@ def cmd_create_feed(args):
         sys.exit(1)
 
     feed_id = str(uuid.uuid4())
+    cover_path = None
+
+    if args.cover:
+        source_cover = Path(args.cover).expanduser()
+        if not source_cover.exists():
+            print(f"Error: Cover file '{source_cover}' not found.", file=sys.stderr)
+            sys.exit(1)
+
+        if source_cover.suffix.lower() not in COVER_EXTENSIONS:
+            print(
+                f"Error: '{source_cover}' is not a supported cover image.",
+                file=sys.stderr,
+            )
+            sys.exit(1)
+
+        validate_publishable_file(source_cover)
+        COVERS_FOLDER.mkdir(parents=True, exist_ok=True)
+        cover_path = COVERS_FOLDER / f"{feed_id}{source_cover.suffix.lower()}"
+        shutil.copy2(source_cover, cover_path)
+
     config[show_key] = {
         "feed_id": feed_id,
         "title": args.title,
         "description": args.description or f"The {args.title} podcast feed.",
         "episodes": [],
     }
+    if cover_path:
+        config[show_key]["cover"] = cover_path.as_posix()
+
     save_master_config(config)
     print(
         "Success! Once you push these changes to GitHub, your new feed will be "
@@ -256,14 +290,7 @@ def cmd_add_episode(args):
         print(f"Error: '{audio_path}' is not a supported audio file.", file=sys.stderr)
         sys.exit(1)
 
-    if audio_path.stat().st_size > MAX_GITHUB_FILE_SIZE_BYTES:
-        print(
-            f"Error: '{audio_path}' is {format_mib(audio_path.stat().st_size)}. "
-            "GitHub blocks files larger than 100 MiB. Compress the audio or use "
-            "external object storage.",
-            file=sys.stderr,
-        )
-        sys.exit(1)
+    validate_publishable_file(audio_path)
 
     episode_dir = EPISODES_FOLDER / str(uuid.uuid4())
     episode_dir.mkdir(parents=True, exist_ok=True)
@@ -319,6 +346,7 @@ def main():
     p_create.add_argument("feed", type=str, help="Feed key used by other CLI commands")
     p_create.add_argument("--title", type=str, required=True, help="Human-readable podcast title")
     p_create.add_argument("--description", type=str, help="Overall podcast summary")
+    p_create.add_argument("--cover", type=str, help="Path to feed cover art")
 
     p_add = subparsers.add_parser("add_episode", help="Import audio into a feed")
     p_add.add_argument("audio_path", type=str, help="Path to a local audio file")
