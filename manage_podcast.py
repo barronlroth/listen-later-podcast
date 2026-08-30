@@ -136,8 +136,14 @@ def create_base_feed(show_id, show_meta):
 
     cover_path = show_meta.get("cover")
     if cover_path:
+        cover_url = f"{BASE_URL}/{public_url_path(Path(cover_path))}"
         image = ET.SubElement(channel, f"{{{ITUNES_NS}}}image")
-        image.set("href", f"{BASE_URL}/{public_url_path(Path(cover_path))}")
+        image.set("href", cover_url)
+
+        rss_image = ET.SubElement(channel, "image")
+        ET.SubElement(rss_image, "url").text = cover_url
+        ET.SubElement(rss_image, "title").text = show_meta.get("title", show_id)
+        ET.SubElement(rss_image, "link").text = BASE_URL
 
     return rss, channel
 
