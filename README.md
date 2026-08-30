@@ -16,6 +16,8 @@ Highlights:
 - [GitHub blocks individual files larger than 100 MiB.](https://docs.github.com/en/repositories/working-with-files/managing-large-files/about-large-files-on-github)
 - There is no authentication-based access control. Random feed IDs and episode folders make URLs impossible to guess, but anyone with a URL can fetch the file.
 
+The CLI rejects audio files larger than 100 MiB before adding them to `public/episodes/`.
+
 For spoken-word podcasts, 64 kbps mono MP3 is usually fine. If you adhere to this bitrate, this means approximate limitations of:
 - 3.5 hours of audio per episode
 - 35 hours of total published audio

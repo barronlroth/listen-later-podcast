@@ -24,6 +24,7 @@ EPISODES_FOLDER = PUBLIC_FOLDER / "episodes"
 MASTER_CONFIG = Path("feed.yml")
 DEFAULT_COVER = "cover.jpg"
 AUDIO_EXTENSIONS = {".mp3", ".m4a", ".wav", ".aac", ".ogg", ".opus"}
+MAX_GITHUB_FILE_SIZE_BYTES = 100 * 1024 * 1024
 
 ITUNES_NS = "http://www.itunes.com/dtds/podcast-1.0.dtd"
 ET.register_namespace("itunes", ITUNES_NS)
@@ -77,6 +78,10 @@ def find_audio_file(episode_dir):
 def audio_mime_type(audio_path):
     guessed, _ = mimetypes.guess_type(audio_path.name)
     return guessed or "audio/mpeg"
+
+
+def format_mib(size_bytes):
+    return f"{size_bytes / (1024 * 1024):.1f} MiB"
 
 
 def public_url_path(path):
@@ -249,6 +254,15 @@ def cmd_add_episode(args):
 
     if audio_path.suffix.lower() not in AUDIO_EXTENSIONS:
         print(f"Error: '{audio_path}' is not a supported audio file.", file=sys.stderr)
+        sys.exit(1)
+
+    if audio_path.stat().st_size > MAX_GITHUB_FILE_SIZE_BYTES:
+        print(
+            f"Error: '{audio_path}' is {format_mib(audio_path.stat().st_size)}. "
+            "GitHub blocks files larger than 100 MiB. Compress the audio or use "
+            "external object storage.",
+            file=sys.stderr,
+        )
         sys.exit(1)
 
     episode_dir = EPISODES_FOLDER / str(uuid.uuid4())
