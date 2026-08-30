@@ -38,9 +38,7 @@ If you need real access control, high-fidelity audio, or scaled storage and down
 Repository page -> Settings -> Pages -> Build and deployment -> Source -> GitHub Actions
 ```
 
-If you do not see the `Settings` tab, open the repository tab dropdown and choose `Settings`.
-
-The workflow detects your GitHub Pages URL automatically, rebuilds the RSS feeds, and publishes the generated `public/` directory.
+In the UI GitHub may shows suggested workflows such as “GitHub Pages Jekyll” or “Static HTML,” do not choose one. This repo already includes a Github Action workflow that will run the next time you push changes to the repo. The workflow detects your GitHub Pages URL automatically, rebuilds the RSS feeds, and publishes the generated `public/` directory.
 
 3. Clone your fork locally and install the only Python dependency:
 
